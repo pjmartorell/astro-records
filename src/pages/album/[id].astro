@@ -4,12 +4,27 @@ import PlayButton from '../../components/PlayButton'
 import TrackList from '../../components/TrackList'
 import Record from '../../components/Record'
 
-const { id } = Astro.params
+// Generate static paths at build time
+export async function getStaticPaths() {
+  const response = await fetch('https://music-api.charca.workers.dev/albums')
+  const { results: albums } = await response.json()
 
-const response = await fetch(
-  `https://music-api.charca.workers.dev/albums/${id}`
-)
-const album = await response.json()
+  return await Promise.all(
+    albums.map(async ({ idAlbum }) => {
+      const response = await fetch(
+        `https://music-api.charca.workers.dev/albums/${idAlbum}`
+      )
+      const albumData = await response.json()
+
+      return {
+        params: { id: idAlbum },
+        props: { album: albumData }
+      }
+    })
+  )
+}
+
+const { album } = Astro.props
 ---
 
 <Layout title={`${album.strAlbum} by ${album.strArtist} - Astro Records`}>
