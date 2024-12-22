@@ -16,3 +16,8 @@ export type PlayerTrack = Track & {
 
 export const isPlaying = signal(false);
 export const currentTrack = signal<PlayerTrack | null>(null);
+
+export function getRandomTrack(tracks: Track[], excludeId?: string): Track {
+  const availableTracks = tracks.filter(t => t.id !== excludeId);
+  return availableTracks[Math.floor(Math.random() * availableTracks.length)];
+}
