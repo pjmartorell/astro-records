@@ -1,4 +1,5 @@
 import { currentTrack, isPlaying } from './state'
+import type { ProgressClickEvent, ProgressBarRect } from './types';
 
 import { useEffect, useState, useRef } from 'preact/hooks'
 
@@ -43,6 +44,7 @@ const MAX_SONGS = 4
 export default function Player() {
   const audioPlayer = useRef<HTMLAudioElement>(null)
   const progressRef = useRef(null)
+  const progressBarRef = useRef<HTMLDivElement>(null)
   const [songIndex, setSongIndex] = useState(4)
   const [progress, setProgress] = useState(0)
 
@@ -59,6 +61,14 @@ export default function Player() {
       setProgress(percentage)
     }
     progressRef.current = requestAnimationFrame(whilePlaying)
+  }
+
+  const handleProgressClick = (event: ProgressClickEvent): void => {
+    const { left, width }: ProgressBarRect = progressBarRef.current.getBoundingClientRect()
+    const clickX: number = event.clientX - left
+    const newTime: number = (clickX / width) * audioPlayer.current.duration
+    audioPlayer.current.currentTime = newTime
+    setProgress((newTime / audioPlayer.current.duration) * 100)
   }
 
   useEffect(() => {
@@ -96,7 +106,11 @@ export default function Player() {
       <h2 id="audio-player-heading" class="sr-only">
         Audio player
       </h2>
-      <div class="flex-1 bg-gray-200 h-1.5 dark:bg-gray-700">
+      <div
+        class="flex-1 bg-gray-200 h-1.5 dark:bg-gray-700"
+        ref={progressBarRef}
+        onClick={handleProgressClick}
+      >
         <div
           aria-orientation="horizontal"
           role="slider"
